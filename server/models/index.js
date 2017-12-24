@@ -1,8 +1,10 @@
 var db = require('../db');
 var mysql = require('mysql');
+var moment = require('../../node_modules/moment/moment.js');
 
-var insertMessagesTable = function (userid, roomid, text) {
-  var msgInsert = `INSERT INTO messages (userid, roomid, text, createdAt) VALUES ('${userid}' '${roomid}' '${text}', '2017-12-23' )`;
+var insertMessagesTable = function (userid, roomid, text, date) {
+  console.log('DATE=======', date);
+  var msgInsert = `INSERT INTO messages (userid, roomid, text, createdAt) VALUES ('${userid}', '${roomid}', '${text}', '${date}' )`;
   db.con.query(msgInsert, function(err, result) {
     if (err) { throw err; }
     console.log('1 msg inserted');
@@ -33,7 +35,7 @@ module.exports = {
         if (err) { throw err; }
         let userId;
 
-        if (result) {
+        if (result.length) {
           userId = result[0].userid;
 
         //if user is not in table, insert user
@@ -41,7 +43,7 @@ module.exports = {
           db.con.query(userInsert, function(err, result) {
             if (err) { throw err; }
             console.log('1 user inserted');
-            userId = result[0].userid;
+            userId = result.insertId;
             // db.con.query(checkUsername, function(err, result) {
             //   if (err) {throw err;}
             //   userId = result[0].userid;
@@ -57,17 +59,17 @@ module.exports = {
           if (err) { throw err; }
           let roomId;
 
-          if (result) {
+          if (result.length) {
             roomId = result[0].roomid;
-            insertMessagesTable(userId, roomId, data.text);
+            insertMessagesTable(userId, roomId, data.text, data.createdAt);
 
           //if room is not in table, insert room
           } else {
             db.con.query(roomInsert, function(err, result) {
               if (err) { throw err; }
               console.log('1 room inserted');
-              roomId = result[0].roomid;
-              insertMessagesTable(userId, roomId, data.text);
+              roomId = result.insertId;
+              insertMessagesTable(userId, roomId, data.text, data.createdAt);
               // db.con.query(checkRoom, function(err, result) {
               //   if (err) {throw err;}
               //   roomId = result[0].roomid;

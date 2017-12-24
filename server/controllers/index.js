@@ -23,8 +23,6 @@ module.exports = {
       req.on('end', function (data) {
         // Assuming, we're receiving JSON, parse the string into a JSON object to return.
         var data = JSON.parse(content);
-        console.log('in controller: ', data);
-        console.log('func', models.messages.post);
         models.messages.post(data);
         res.writeHead(201, headers);  
         res.end();

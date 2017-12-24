@@ -19,7 +19,7 @@ CREATE TABLE messages (
   userid INT NOT NULL,
   roomid INT NOT NULL,
   text VARCHAR(200),
-  createdAt DATE,
+  createdAt VARCHAR(30),
   PRIMARY KEY (messageid),
   FOREIGN KEY (roomid) REFERENCES rooms(roomid),
   FOREIGN KEY (userid) REFERENCES users(userid)

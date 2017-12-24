@@ -215,7 +215,8 @@ var app = {
     var message = {
       username: app.username,
       text: app.$message.val(),
-      roomname: app.roomname || 'lobby'
+      roomname: app.roomname || 'lobby',
+      createdAt: moment().format('MMMM Do YYYY, h:mm:ss a')
     };
 
     app.send(message);
