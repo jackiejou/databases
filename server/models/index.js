@@ -3,7 +3,6 @@ var mysql = require('mysql');
 var moment = require('../../node_modules/moment/moment.js');
 
 var insertMessagesTable = function (userid, roomid, text, date) {
-  console.log('DATE=======', date);
   var msgInsert = `INSERT INTO messages (userid, roomid, text, createdAt) VALUES ('${userid}', '${roomid}', '${text}', '${date}' )`;
   db.con.query(msgInsert, function(err, result) {
     if (err) { throw err; }
@@ -13,14 +12,17 @@ var insertMessagesTable = function (userid, roomid, text, date) {
 
 module.exports = {
   messages: {
-    get: function () {
+    get: function (res, headers) {
+      var messageList = [];
+      var getAllMessages = 'SELECT * FROM messages, users, rooms WHERE messages.userid = users.userid AND messages.roomid = rooms.roomid ORDER BY createdAt DESC;';
+      db.con.query(getAllMessages, function(err, dataArray) {
+        var data = {results: dataArray};
+        res.writeHead(200, headers);
+        res.end(JSON.stringify(data));
+      });
 
     }, // a function which produces all the messages
-    post: function (data) {
-
-
-      console.log('data in models', data);
-      var date = new Date();
+    post: function (data, res, headers) {
 
       //queries to check to see if username and roomname exist
       var checkUsername = `SELECT userid FROM users WHERE username = '${data.username}'`;
@@ -44,13 +46,8 @@ module.exports = {
             if (err) { throw err; }
             console.log('1 user inserted');
             userId = result.insertId;
-            // db.con.query(checkUsername, function(err, result) {
-            //   if (err) {throw err;}
-            //   userId = result[0].userid;
-            // });
           });
         }
-        //user is definitely in table, query for user's userid
 
 
 
@@ -70,30 +67,13 @@ module.exports = {
               console.log('1 room inserted');
               roomId = result.insertId;
               insertMessagesTable(userId, roomId, data.text, data.createdAt);
-              // db.con.query(checkRoom, function(err, result) {
-              //   if (err) {throw err;}
-              //   roomId = result[0].roomid;
-              // });
+              res.writeHead(201, headers);
+              res.end(JSON.stringify(['asdfasd', 'sdfasdfasdf']));
             });
           }
-
-        // console.log('checkRoom ', result[0].userid);
         });
-
-
-
-      // db.con.query(roomSql, function(err, result) {
-      //   if (err) {throw err;}
-      //   console.log('1 room inserted');
-      // });
-      
-      // db.con.query(userSql, function(err, result) {
-      //   if (err) {throw err;}
-      //   console.log('1 user inserted');
-      // }); 
-
       });
-    } // a function which can be used to insert a message into the database
+    }
   },
 
   users: {

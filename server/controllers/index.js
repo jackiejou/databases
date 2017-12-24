@@ -12,7 +12,7 @@ var headers = {
 module.exports = {
   messages: {
     get: function (req, res) {
-      //respond with list of messages
+      models.messages.get(res, headers);
     }, // a function which handles a get request for all messages
     post: function (req, res) {
       var content = '';
@@ -23,9 +23,7 @@ module.exports = {
       req.on('end', function (data) {
         // Assuming, we're receiving JSON, parse the string into a JSON object to return.
         var data = JSON.parse(content);
-        models.messages.post(data);
-        res.writeHead(201, headers);  
-        res.end();
+        models.messages.post(data, res, headers);
       });
 
 
