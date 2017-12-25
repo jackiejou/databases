@@ -1,74 +1,68 @@
 var db = require('../db');
 var mysql = require('mysql');
-var moment = require('../../node_modules/moment/moment.js');
+// var moment = require('../../node_modules/moment/moment.js');
 
-var insertMessagesTable = function (userid, roomid, text, date) {
-  var msgInsert = `INSERT INTO messages (userid, roomid, text, createdAt) VALUES ('${userid}', '${roomid}', '${text}', '${date}' )`;
-  db.con.query(msgInsert, function(err, result) {
+var insertMessagesTable = function (userid, roomid, text, callback) {
+  var msgInsert = `INSERT INTO messages (userid, roomid, text) VALUES ('${userid}', '${roomid}', '${text}' )`;
+  db.query(msgInsert, function(err, result) {
     if (err) { throw err; }
     console.log('1 msg inserted');
+    callback(result);
   });
 };
 
 module.exports = {
   messages: {
-    get: function (res, headers) {
+    get: function (callback) {
       var messageList = [];
-      var getAllMessages = 'SELECT * FROM messages, users, rooms WHERE messages.userid = users.userid AND messages.roomid = rooms.roomid ORDER BY createdAt DESC;';
-      db.con.query(getAllMessages, function(err, dataArray) {
-        var data = {results: dataArray};
-        res.writeHead(200, headers);
-        res.end(JSON.stringify(data));
+      var getAllMessages = 'SELECT * FROM messages, users, rooms WHERE messages.userid = users.userid AND messages.roomid = rooms.roomid;';
+      db.query(getAllMessages, function(err, dataArray) {
+        callback(dataArray);
       });
 
     }, // a function which produces all the messages
-    post: function (data, res, headers) {
+    post: function (parameter, callback) {
 
       //queries to check to see if username and roomname exist
-      var checkUsername = `SELECT userid FROM users WHERE username = '${data.username}'`;
-      var checkRoom = `SELECT roomid FROM rooms WHERE roomname = '${data.roomname}'`;
+      var checkUsername = `SELECT userid FROM users WHERE username = '${parameter[1]}'`;
+      var checkRoom = `SELECT roomid FROM rooms WHERE roomname = '${parameter[2]}'`;
 
       //table insertions
-      var roomInsert = `INSERT INTO rooms (roomname) VALUES ('${data.roomname}')`;
-      var userInsert = `INSERT INTO users (username) VALUES ('${data.username}')`;
+      var roomInsert = `INSERT INTO rooms (roomname) VALUES ('${parameter[2]}')`;
+      var userInsert = `INSERT INTO users (username) VALUES ('${parameter[1]}')`;
 
       //first check if user is in table
-      db.con.query(checkUsername, function(err, result) {
+      db.query(checkUsername, function(err, result) {
         if (err) { throw err; }
-        let userId;
+        var userId;
 
         if (result.length) {
           userId = result[0].userid;
 
         //if user is not in table, insert user
         } else {
-          db.con.query(userInsert, function(err, result) {
+          db.query(userInsert, function(err, result) {
             if (err) { throw err; }
             console.log('1 user inserted');
             userId = result.insertId;
           });
         }
 
-
-
         //next check if room is in table
-        db.con.query(checkRoom, function(err, result) {
+        db.query(checkRoom, function(err, result) {
           if (err) { throw err; }
-          let roomId;
+          var roomId;
 
           if (result.length) {
             roomId = result[0].roomid;
-            insertMessagesTable(userId, roomId, data.text, data.createdAt);
-
+            insertMessagesTable(userId, roomId, parameter[0], callback);
           //if room is not in table, insert room
           } else {
-            db.con.query(roomInsert, function(err, result) {
+            db.query(roomInsert, function(err, result) {
               if (err) { throw err; }
               console.log('1 room inserted');
               roomId = result.insertId;
-              insertMessagesTable(userId, roomId, data.text, data.createdAt);
-              res.writeHead(201, headers);
-              res.end(JSON.stringify(['asdfasd', 'sdfasdfasdf']));
+              insertMessagesTable(userId, roomId, parameter[0], callback);
             });
           }
         });
@@ -78,7 +72,17 @@ module.exports = {
 
   users: {
     // Ditto as above.
-    get: function () {},
-    post: function () {}
+    get: function (callback) {
+      var userQuery = 'select * from users';
+      db.query(userQuery, (err, result) => {
+        callback(result);
+      });
+    },
+    post: function (parameter, callback) {
+      var addUserQuery = 'insert into users (username) values (?)';
+      db.query(addUserQuery, parameter, (err, result) => {
+        callback(result);
+      });
+    }
   }
 };

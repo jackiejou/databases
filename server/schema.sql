@@ -4,13 +4,13 @@ USE chat;
 
 CREATE TABLE rooms (
   roomid INT NOT NULL AUTO_INCREMENT,
-  roomname VARCHAR(20),
+  roomname VARCHAR(40) NOT NULL,
   PRIMARY KEY (roomid)
 );
 
 CREATE TABLE users (
   userid INT NOT NULL AUTO_INCREMENT,
-  username VARCHAR(20),
+  username VARCHAR(40) NOT NULL,
   PRIMARY KEY (userid)
 );
 
@@ -18,7 +18,7 @@ CREATE TABLE messages (
   messageid INT NOT NULL AUTO_INCREMENT,
   userid INT NOT NULL,
   roomid INT NOT NULL,
-  text VARCHAR(200),
+  text VARCHAR(200) NOT NULL,
   createdAt VARCHAR(30),
   PRIMARY KEY (messageid),
   FOREIGN KEY (roomid) REFERENCES rooms(roomid),
@@ -34,4 +34,3 @@ CREATE TABLE messages (
 /*  Execute this file from the command line by typing:
  *    mysql -u root < server/schema.sql
  *  to create the database and the tables.*/
-
